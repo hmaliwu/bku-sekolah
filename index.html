@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Aplikasi BKU & Buku Kas Pembantu Sekolah</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Mencegah scroll ganda */
+      background-color: #0f172a; /* Warna background menyesuaikan tema aplikasi */
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PENTING: Ganti URL di bawah ini dengan URL Web App dari hasil Deploy Google Apps Script Anda -->
+  <iframe id="bku-app-iframe" src="https://script.google.com/macros/s/AKfycbxxuWKg5BSDC5FTLWfRjjSVvmGYLHlWAbFLQQ-7bDKQ-WARcvgWyGJ5hxpP5doot3p-6g/exec" allowfullscreen></iframe>
+
+  <script>
+    const iframe = document.getElementById('bku-app-iframe');
+
+    // 1. Menerima pesan/sinyal dari dalam aplikasi BKU (Iframe) untuk memperbarui Address Bar terluar
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'UPDATE_HASH') {
+        // Mengubah URL address bar tanpa memuat ulang (refresh) halaman
+        history.pushState(null, null, event.data.hash);
+      }
+    });
+
+    // 2. Ketika user menekan tombol BACK / FORWARD pada browser terluar, beri tahu Iframe di dalam untuk pindah menu
+    window.addEventListener('hashchange', function() {
+      let targetHash = window.location.hash.substring(1);
+      if (targetHash) {
+        // Mengirim sinyal ke dalam iframe
+        iframe.contentWindow.postMessage({ type: 'PARENT_HASH_CHANGE', hash: targetHash }, '*');
+      }
+    });
+
+    // 3. Sinkronisasi awal saat link langsung dibuka dengan menu tertentu (contoh: namasekolah.com/#penerimaan)
+    iframe.onload = function() {
+      let initialHash = window.location.hash.substring(1);
+      if (initialHash) {
+        iframe.contentWindow.postMessage({ type: 'PARENT_HASH_CHANGE', hash: initialHash }, '*');
+      }
+    };
+  </script>
+</body>
+</html>
+```
