@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Aplikasi BKU</title>
+  <style>
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- PENTING: Masukkan Link Apps Script Anda di sini -->
+  <iframe id="bku-app-iframe" src="https://script.google.com/macros/s/AKfycbzuSIthDqCN0Hikr_6o2QlqSjtmrYt1XbCnA8_h5kgXatYoAgTbtdwL-yvU_gM-HpKeOg/exec" allowfullscreen></iframe>
+
+  <script>
+    const iframe = document.getElementById('bku-app-iframe');
+
+    // Menerima pesan dari Apps Script (dari window.top) untuk mengubah Address Bar
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'UPDATE_HASH') {
+        history.replaceState(null, null, event.data.hash);
+      }
+    });
+
+    // Mengirim sinyal ke Apps Script jika tombol Back/Forward di browser ditekan
+    window.addEventListener('hashchange', function() {
+      let targetHash = window.location.hash.substring(1);
+      iframe.contentWindow.postMessage({ type: 'PARENT_HASH_CHANGE', hash: targetHash }, '*');
+    });
+
+    // Menangani sinkronisasi saat pertama kali halaman dimuat (misal jika di-refresh saat berada di menu #penerimaan)
+    iframe.onload = function() {
+      let initialHash = window.location.hash.substring(1);
+      if (initialHash) {
+        iframe.contentWindow.postMessage({ type: 'PARENT_HASH_CHANGE', hash: initialHash }, '*');
+      }
+    };
+  </script>
+</body>
+</html>
